@@ -1,4 +1,5 @@
 ﻿using FribergAdminWebApi.Data.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
 namespace FribergAdminWebApi.Data.Repositories
@@ -9,39 +10,46 @@ namespace FribergAdminWebApi.Data.Repositories
     {
         protected TContext _context;
 
-        public Task<T> AddAsync(T entity)
+        public GenericRepository(TContext context)
         {
-            throw new NotImplementedException();
+            _context = context;
         }
 
-        public Task<bool> AnyAsync(Expression<Func<T, bool>> predicate)
+        public async Task<T> AddAsync(T entity)
         {
-            throw new NotImplementedException();
+            await _context.AddAsync(entity);
+            await _context.SaveChangesAsync();
+            return entity;
         }
 
-        public Task DeleteAsync(int id)
+        public async Task<bool> AnyAsync(Expression<Func<T, bool>> predicate)
         {
-            throw new NotImplementedException();
+            return await _context.Set<T>().AnyAsync(predicate);
         }
 
-        public Task<T?> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate)
+        public async Task DeleteAsync(int id)
         {
-            throw new NotImplementedException();
+            var entity = await GetByIdAsync(id);
+            if (entity != null)
+            {
+                _context.Set<T>().Remove(entity);
+                await _context.SaveChangesAsync();
+            }
         }
 
-        public Task<IEnumerable<T>> GetAllAsync()
+        public virtual Task<T?> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate)
         {
-            throw new NotImplementedException();
+            return _context.Set<T>().FirstOrDefaultAsync(predicate);
         }
 
-        public Task<T> GetByIdAsync(int id)
-        {
-            throw new NotImplementedException();
-        }
+        public async Task<IEnumerable<T>> GetAllAsync() => await _context.Set<T>().ToListAsync();
 
-        public Task UpdateAsync(T entity)
+        public async Task<T> GetByIdAsync(int id) => await _context.Set<T>().FindAsync(id);
+
+        public async Task UpdateAsync(T entity)
         {
-            throw new NotImplementedException();
+            _context.Update(entity);
+            await _context.SaveChangesAsync();
         }
     }
 }

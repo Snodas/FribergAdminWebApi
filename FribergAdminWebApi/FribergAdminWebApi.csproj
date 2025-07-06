@@ -22,7 +22,6 @@
   <ItemGroup>
     <Folder Include="Data\Dto\" />
     <Folder Include="Data\Seeding\" />
-    <Folder Include="Models\" />
   </ItemGroup>
 
 </Project>

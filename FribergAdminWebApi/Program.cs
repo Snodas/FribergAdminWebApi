@@ -1,5 +1,7 @@
 
 using FribergAdminWebApi.Data;
+using FribergAdminWebApi.Data.Interfaces;
+using FribergAdminWebApi.Data.Repositories;
 using FribergAdminWebApi.Mapping;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,10 +20,11 @@ namespace FribergAdminWebApi
             builder.Services.AddControllers();
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddOpenApi();
-            //builder.Services.AddDbContext<ApiDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
+            builder.Services.AddDbContext<ApiDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
 
             //Injecting
 
+            builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
             //builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 
             var app = builder.Build();

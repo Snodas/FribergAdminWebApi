@@ -1,17 +1,18 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using FribergAdminWebApi.Models;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace FribergAdminWebApi.Data
 {
-    public class ApiDbContext
+    public class ApiDbContext : DbContext
     {
-        //public ApiDbContext(DbContextOptions options) : base(options) { }
+        public DbSet<Employee> Employees { get; set; }
+        public DbSet<Admin> Admins { get; set; }
+        public DbSet<WorkEntry> WorkEntries { get; set; }
 
 
-        //protected override void OnModelCreating(ModelBuilder modelBuilder)
-        //{
-        //    base.OnModelCreating(modelBuilder);
-        //}
+        public ApiDbContext(DbContextOptions<ApiDbContext> options) : base(options) { }
+        
 
     }
 }
