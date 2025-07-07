@@ -10,7 +10,9 @@ namespace FribergAdminWebApi.Models
         public string LastName { get; set; } = string.Empty;
         public decimal HourlyRate { get; set; }
         public string SocialSecurityNumber { get; set; } = string.Empty;
-        
+
+        public virtual ICollection<WorkEntry>? WorkEntries { get; set; }
+
         [Phone]
         public string PhoneNumber { get; set; } = string.Empty;
         

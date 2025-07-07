@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using FribergAdminWebApi.Data;
+using FribergAdminWebApi.Data.Interfaces;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FribergAdminWebApi.Controllers
@@ -7,6 +10,17 @@ namespace FribergAdminWebApi.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
-        //Vänta tills Identity!!!
+        private readonly UserManager<ApiUser> _userManager;
+        private readonly IConfiguration _configuration;
+        private readonly IEmployeeRepository _employeeRepository;
+
+        public AuthController(IConfiguration configuration, IEmployeeRepository employeeRepository)
+        {
+            _configuration = configuration;
+            _employeeRepository = employeeRepository;
+        }
+
+
+        
     }
 }

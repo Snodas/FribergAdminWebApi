@@ -1,8 +1,9 @@
 ﻿using FribergAdminWebApi.Models;
+using Microsoft.AspNetCore.Identity;
 
 namespace FribergAdminWebApi.Data
 {
-    public class ApiUser
+    public class ApiUser : IdentityUser
     {
         public string FirstName { get; set; } = string.Empty;
         public string LastName { get; set; } = string.Empty;

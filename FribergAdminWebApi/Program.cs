@@ -3,6 +3,7 @@ using FribergAdminWebApi.Data;
 using FribergAdminWebApi.Data.Interfaces;
 using FribergAdminWebApi.Data.Repositories;
 using FribergAdminWebApi.Mapping;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Scalar.AspNetCore;
@@ -22,10 +23,25 @@ namespace FribergAdminWebApi
             builder.Services.AddOpenApi();
             builder.Services.AddDbContext<ApiDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
 
+            
+
             //Injecting
 
             builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
             //builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
+
+            //Identity
+            builder.Services.AddIdentityCore<IdentityUser>()
+                .AddRoles<IdentityRole>()
+                .AddEntityFrameworkStores<ApiDbContext>();
+
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAll",
+                    b => b.AllowAnyMethod()
+                    .AllowAnyHeader()
+                    .AllowAnyOrigin());
+            });
 
             var app = builder.Build();
 
@@ -37,6 +53,8 @@ namespace FribergAdminWebApi
             }
 
             app.UseHttpsRedirection();
+
+            app.UseCors("AllowAll");
 
             app.UseAuthorization();
 
