@@ -38,5 +38,23 @@ namespace FribergAdminWebApi.Controllers
         {
             return NotFound("Not implemented yet");
         }
+
+        [HttpGet("admin/allemployees")]
+        [Authorize(Roles = ApiRoles.Admin)]
+        public async Task<ActionResult<IEnumerable<EmployeeUserDto>>> GetAllEmployees()
+        {
+            var employees = await _employeeRepository.GetAllEmployeesAsync();
+            if (employees == null)
+            {
+                return NotFound("No employees found.");
+            }
+
+            var response = _mapper.Map<IEnumerable<EmployeeUserDto>>(employees);
+
+            return Ok(response);
+        }
+
+        //[HttpGet()]
+        //public async Task
     }
 }
