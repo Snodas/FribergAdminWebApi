@@ -27,10 +27,30 @@ namespace FribergAdminWebApi.Controllers
         }
 
         [HttpPost("create")]
-        [Authorize(Roles = $"{ApiRoles.Admin}")]
+        //[Authorize(Roles = $"{ApiRoles.Admin}")]
         public async Task<ActionResult> CreateEmployee(EmployeeCreateDto dto)
         {
-            return NotFound("Not implemented yet");
+            try
+            {
+                if (await _employeeRepository.AnyAsync(e => e.Email == dto.Email))
+                {
+                    return BadRequest("Emplyee with this email already exists");
+                }
+
+                var employee = _mapper.Map<Employee>(dto);
+
+                var createdEmployee = await _employeeRepository.AddAsync(employee);
+
+                return CreatedAtAction(
+                    nameof(GetEmployee),
+                    new { id = createdEmployee.Id },
+                    createdEmployee
+                );
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "An error occurred while creating the employee");
+            }           
         }
 
         [HttpPut("{employeeId}/edit")]
@@ -38,6 +58,21 @@ namespace FribergAdminWebApi.Controllers
         {
             return NotFound("Not implemented yet");
         }
+
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Employee>> GetEmployee(int id)
+        {
+            var employee = await _employeeRepository.GetByIdAsync(id);
+
+            if (employee == null)
+            {
+                return NotFound();
+            }
+           
+            return Ok(employee);
+        }
+
 
         [HttpGet("admin/allemployees")]
         [Authorize(Roles = ApiRoles.Admin)]

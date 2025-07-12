@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using FribergAdminWebApi.Data.Dto;
+using FribergAdminWebApi.Models;
 
 namespace FribergAdminWebApi.Mapping
 {
@@ -6,7 +8,9 @@ namespace FribergAdminWebApi.Mapping
     {
         public AutoMapperProfile()
         {
-            
+            //Employee
+
+            CreateMap<EmployeeCreateDto, Employee>();
         }
 
     }

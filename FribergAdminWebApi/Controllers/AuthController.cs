@@ -1,10 +1,15 @@
-﻿using FribergAdminWebApi.Data;
+﻿using FribergAdminWebApi.Constants;
+using FribergAdminWebApi.Data;
 using FribergAdminWebApi.Data.Dto;
 using FribergAdminWebApi.Data.Interfaces;
 using FribergAdminWebApi.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 namespace FribergAdminWebApi.Controllers
 {
@@ -56,14 +61,118 @@ namespace FribergAdminWebApi.Controllers
         [Route("register")]
         public async Task<IActionResult> Register(RegisterDto regDto)
         {
-            return BadRequest("Not implemented yet");
+            ApiUser newUser = new();
+            Employee newEmployee = new();
+
+            try
+            {
+                newUser = CreateApiUser(regDto);
+                await _userManager.CreateAsync(newUser, regDto.Password);
+                await _userManager.AddToRoleAsync(newUser, ApiRoles.User);
+            }
+            catch (Exception ex)
+            {
+                return Problem($"Something went wrong in the {nameof(Register)}", statusCode: 500);
+            }
+
+            try
+            {
+                newEmployee = CreateEmployee(regDto);
+                newEmployee.ApiUser = newUser;
+                await _employeeRepository.AddAsync(newEmployee);
+            }
+            catch (Exception ex)
+            {
+                return Problem($"Something went wrong in the {nameof(Register)}", statusCode: 500);
+            }
+
+            return Ok();
         }
 
         [HttpPost]
         [Route("login")]
         public async Task<ActionResult<AuthResponse>> Login(LoginUserDto logDto)
         {
-            return BadRequest("Not implemented yet");
+            try
+            {
+                var user = await _userManager.FindByEmailAsync(logDto.Email);
+                var passwordValid = await _userManager.CheckPasswordAsync(user, logDto.Password);
+                if (!passwordValid || user == null)
+                {
+                    return Unauthorized();
+                }
+                string tokenString = await GenerateToken(user);
+                var response = new AuthResponse
+                {
+                    Email = user.Email,
+                    Token = tokenString,
+                    UserId = user.Id
+                };
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return Problem($"Something went wrong in the {nameof(Login)}", statusCode: 500);
+            }
         }
+
+
+
+        private async Task<string> GenerateToken(ApiUser user)
+        {
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtSettings:Key"]));
+            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+
+            var roles = await _userManager.GetRolesAsync(user);
+            var roleClaims = roles.Select(q => new Claim(ClaimTypes.Role, q)).ToList();
+
+            var userClaims = await _userManager.GetClaimsAsync(user);
+
+            var claims = new List<Claim>
+            {
+                new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new Claim(JwtRegisteredClaimNames.Email, user.Email),
+                new Claim(CustomClaimTypes.Uid, user.Id)
+            }
+            .Union(roleClaims)
+            .Union(userClaims);
+
+            var token = new JwtSecurityToken(
+                issuer: _configuration["JwtSettings:Issuer"],
+                audience: _configuration["JwtSettings:Audience"],
+                claims: claims,
+                expires: DateTime.UtcNow.AddMinutes(Convert.ToInt32(_configuration["JwtSettings:DurationInMinutes"])),
+                signingCredentials: credentials
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        //private async Task<string> GenerateToken(ApiUser user)
+        //{
+        //    var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtSettings:Key"]));
+        //    var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+        //    var roles = await _userManager.GetRolesAsync(user);
+        //    var roleClaims = roles.Select(q => new Claim(ClaimTypes.Role, q)).ToList();
+        //    var claims = new List<Claim>
+        //    {
+        //        new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
+        //        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+        //        new Claim(JwtRegisteredClaimNames.Email, user.Email),
+        //        new Claim(CustomClaimTypes.Uid, user.Id)
+        //    }
+        //    .Union(roleClaims);
+
+        //    var token = new JwtSecurityToken(issuer: _configuration["JwtSettings:Issuer"],
+        //        audience: _configuration["JwtSettings:Audience"],
+        //        claims: claims,
+        //        expires: DateTime.UtcNow.AddMinutes(Convert.ToInt32(_configuration["JwtSettings:DurationInMinutes"])),
+        //        signingCredentials: credentials
+        //        );
+
+        //    return new JwtSecurityTokenHandler().WriteToken(token);
+        //}
     }
 }

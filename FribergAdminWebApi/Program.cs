@@ -4,10 +4,13 @@ using FribergAdminWebApi.Data.Interfaces;
 using FribergAdminWebApi.Data.Repositories;
 using FribergAdminWebApi.Data.Seeding;
 using FribergAdminWebApi.Mapping;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
+using System.Text;
 using System.Text.Json.Serialization;
 
 namespace FribergAdminWebApi
@@ -29,7 +32,9 @@ namespace FribergAdminWebApi
 
             builder.Services.AddScoped<IWorkEntryRepository, WorkEntryRepository>();
             builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
-            //builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
+            builder.Services.AddAutoMapper(cfg => {
+                cfg.AddProfile<AutoMapperProfile>();
+            });
 
             //Identity
             builder.Services.AddIdentityCore<ApiUser>()
@@ -48,6 +53,25 @@ namespace FribergAdminWebApi
                     b => b.AllowAnyMethod()
                     .AllowAnyHeader()
                     .AllowAnyOrigin());
+            });
+
+            builder.Services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            }).AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ClockSkew = TimeSpan.Zero,
+                    ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
+                    ValidAudience = builder.Configuration["JwtSettings:Audience"],
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Key"]))                    
+                };
             });
 
             var app = builder.Build();

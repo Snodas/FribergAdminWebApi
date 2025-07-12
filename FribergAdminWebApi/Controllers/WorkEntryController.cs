@@ -28,7 +28,7 @@ namespace FribergAdminWebApi.Controllers
         [HttpGet("allworkentries")]
         public async Task<ActionResult<IEnumerable<WorkEntryDto>>> GetAllWorkEntries()
         {
-            return NotFound("");
+            return NotFound("Not implemented yet");
         }
 
         [HttpGet("")]
