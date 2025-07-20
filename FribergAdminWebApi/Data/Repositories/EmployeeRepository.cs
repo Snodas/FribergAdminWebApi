@@ -17,6 +17,13 @@ namespace FribergAdminWebApi.Data.Repositories
                 .ToListAsync();
         }
 
+        public async Task<Employee?> GetByUserIdAsync(string userId)
+        {
+            return await _context.Employees
+                .Include(e => e.ApiUser)
+                .FirstOrDefaultAsync(e => e.ApiUserId == userId);
+        }
+
         public async Task<IEnumerable<Employee>> GetEmployeesWithRecentWorkEntriesAsync()
         {
             var lastThirtyDays = DateTime.Now.AddDays(-30);

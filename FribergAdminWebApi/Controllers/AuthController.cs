@@ -32,28 +32,33 @@ namespace FribergAdminWebApi.Controllers
         {
             ApiUser user = new ApiUser
             {
-                //UserName = regDto.Email,
-                //NormalizedUserName = regDto.Email.ToUpper(),
-                //Email = regDto.Email,
-                //NormalizedEmail = regDto.Email.ToUpper(),
-                //FirstName = regDto.FirstName,
-                //LastName = regDto.LastName,
-                //EmailConfirmed = false,
+                UserName = regDto.Email,
+                NormalizedUserName = regDto.Email.ToUpper(),
+                Email = regDto.Email,
+                NormalizedEmail = regDto.Email.ToUpper(),
+                FirstName = regDto.FirstName,
+                LastName = regDto.LastName,
+                EmailConfirmed = true,
             };
 
             return user;
         }
 
-        private Employee CreateEmployee(RegisterDto regDto)
+        private Employee CreateEmployee(RegisterDto regDto, string userId)
         {
             Employee employee = new Employee
             {
-                //Email = regDto.Email,
-                //PhoneNumber = regDto.PhoneNumber,
-                //FirstName = regDto.FirstName,
-                //LastName = regDto.LastName,
+                Email = regDto.Email,
+                PhoneNumber = regDto.PhoneNumber,
+                FirstName = regDto.FirstName,
+                LastName = regDto.LastName,
+                HourlyRate = regDto.HourlyRate,
+                SocialSecurityNumber = regDto.SocialSecurityNumber,
+                Address = regDto.Address,
+                EmergencyContactName = regDto.EmergencyContactName,
+                EmergencyContactPhone = regDto.EmergencyContactPhone,
+                ApiUserId = userId // Set the foreign key
             };
-
             return employee;
         }
 
@@ -61,32 +66,32 @@ namespace FribergAdminWebApi.Controllers
         [Route("register")]
         public async Task<IActionResult> Register(RegisterDto regDto)
         {
-            ApiUser newUser = new();
-            Employee newEmployee = new();
-
             try
             {
-                newUser = CreateApiUser(regDto);
-                await _userManager.CreateAsync(newUser, regDto.Password);
-                await _userManager.AddToRoleAsync(newUser, ApiRoles.User);
-            }
-            catch (Exception ex)
-            {
-                return Problem($"Something went wrong in the {nameof(Register)}", statusCode: 500);
-            }
+                if (await _userManager.FindByEmailAsync(regDto.Email) != null)
+                {
+                    return BadRequest("User with this email already exists");
+                }
 
-            try
-            {
-                newEmployee = CreateEmployee(regDto);
-                newEmployee.ApiUser = newUser;
+                var newUser = CreateApiUser(regDto);
+                var userResult = await _userManager.CreateAsync(newUser, regDto.Password);
+
+                if (!userResult.Succeeded)
+                {
+                    return BadRequest($"Failed to create user: {string.Join(", ", userResult.Errors.Select(e => e.Description))}");
+                }
+
+                await _userManager.AddToRoleAsync(newUser, ApiRoles.Employee);
+
+                var newEmployee = CreateEmployee(regDto, newUser.Id);
                 await _employeeRepository.AddAsync(newEmployee);
+
+                return Ok(new { Message = "User registered successfully", UserId = newUser.Id });
             }
             catch (Exception ex)
             {
-                return Problem($"Something went wrong in the {nameof(Register)}", statusCode: 500);
+                return Problem($"Something went wrong in the {nameof(Register)}: {ex.Message}", statusCode: 500);
             }
-
-            return Ok();
         }
 
         [HttpPost]
@@ -97,10 +102,12 @@ namespace FribergAdminWebApi.Controllers
             {
                 var user = await _userManager.FindByEmailAsync(logDto.Email);
                 var passwordValid = await _userManager.CheckPasswordAsync(user, logDto.Password);
+                
                 if (!passwordValid || user == null)
                 {
                     return Unauthorized();
                 }
+                
                 string tokenString = await GenerateToken(user);
                 var response = new AuthResponse
                 {
@@ -109,7 +116,7 @@ namespace FribergAdminWebApi.Controllers
                     UserId = user.Id
                 };
 
-                return Ok(response);
+                return Accepted(response);
             }
             catch (Exception ex)
             {

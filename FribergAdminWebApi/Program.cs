@@ -32,6 +32,7 @@ namespace FribergAdminWebApi
 
             builder.Services.AddScoped<IWorkEntryRepository, WorkEntryRepository>();
             builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
+            builder.Services.AddScoped<ISalaryRepository, SalaryRepository>();
             builder.Services.AddAutoMapper(cfg => {
                 cfg.AddProfile<AutoMapperProfile>();
             });
@@ -45,6 +46,7 @@ namespace FribergAdminWebApi
                 .AddJsonOptions(options =>
                 {
                     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+                    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
                 });
 
             builder.Services.AddCors(options =>

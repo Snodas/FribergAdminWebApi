@@ -209,6 +209,37 @@ namespace FribergAdminWebApi.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Salaries",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    EmployeeId = table.Column<int>(type: "int", nullable: false),
+                    Year = table.Column<int>(type: "int", nullable: false),
+                    Month = table.Column<int>(type: "int", nullable: false),
+                    PeriodStart = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    PeriodEnd = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    TotalHours = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    GrossWages = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    TaxDeduction = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    PensionDeduction = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    NetWages = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    PaidDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsPaid = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Salaries", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Salaries_Employees_EmployeeId",
+                        column: x => x.EmployeeId,
+                        principalTable: "Employees",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "WorkEntries",
                 columns: table => new
                 {
@@ -284,6 +315,11 @@ namespace FribergAdminWebApi.Migrations
                 filter: "[ApiUserId] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Salaries_EmployeeId",
+                table: "Salaries",
+                column: "EmployeeId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_WorkEntries_EmployeeId",
                 table: "WorkEntries",
                 column: "EmployeeId");
@@ -309,6 +345,9 @@ namespace FribergAdminWebApi.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetUserTokens");
+
+            migrationBuilder.DropTable(
+                name: "Salaries");
 
             migrationBuilder.DropTable(
                 name: "WorkEntries");

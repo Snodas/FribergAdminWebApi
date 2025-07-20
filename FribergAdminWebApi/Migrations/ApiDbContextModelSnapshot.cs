@@ -182,6 +182,60 @@ namespace FribergAdminWebApi.Migrations
                     b.ToTable("Employees");
                 });
 
+            modelBuilder.Entity("FribergAdminWebApi.Models.Salary", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("EmployeeId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("GrossWages")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<bool>("IsPaid")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("Month")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("NetWages")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("PaidDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("PensionDeduction")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("PeriodEnd")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("PeriodStart")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("TaxDeduction")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("TotalHours")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.ToTable("Salaries");
+                });
+
             modelBuilder.Entity("FribergAdminWebApi.Models.WorkEntry", b =>
                 {
                     b.Property<int>("Id")
@@ -362,6 +416,17 @@ namespace FribergAdminWebApi.Migrations
                     b.Navigation("ApiUser");
                 });
 
+            modelBuilder.Entity("FribergAdminWebApi.Models.Salary", b =>
+                {
+                    b.HasOne("FribergAdminWebApi.Models.Employee", "Employee")
+                        .WithMany("Salaries")
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Employee");
+                });
+
             modelBuilder.Entity("FribergAdminWebApi.Models.WorkEntry", b =>
                 {
                     b.HasOne("FribergAdminWebApi.Models.Employee", "Employee")
@@ -433,6 +498,8 @@ namespace FribergAdminWebApi.Migrations
 
             modelBuilder.Entity("FribergAdminWebApi.Models.Employee", b =>
                 {
+                    b.Navigation("Salaries");
+
                     b.Navigation("WorkEntries");
                 });
 #pragma warning restore 612, 618

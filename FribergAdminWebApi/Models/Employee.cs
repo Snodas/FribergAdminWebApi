@@ -12,13 +12,14 @@ namespace FribergAdminWebApi.Models
         public string SocialSecurityNumber { get; set; } = string.Empty;
 
         public virtual ICollection<WorkEntry>? WorkEntries { get; set; }
+        public virtual ICollection<Salary>? Salaries { get; set; }
 
         [Phone]
         public string PhoneNumber { get; set; } = string.Empty;
         
         [EmailAddress]
         public string Email { get; set; } = string.Empty;
-        public string Address { get; set; } = string.Empty;      
+        public string Address { get; set; } = string.Empty;
         public string? ApiUserId { get; set; }
         public ApiUser? ApiUser { get; set; }
 

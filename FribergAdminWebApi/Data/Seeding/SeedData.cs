@@ -13,10 +13,15 @@ namespace FribergAdminWebApi.Data.Seeding
                 await UserAndRoleSeeding.SeedUsersAndEmployeesAsync(userManager, context);
             }
 
-            //if (!context.WorkEntries.Any())
-            //{
-            //    await WorkEntrySeeding.SeedWorkEntriesAsync()
-            //}
+            if (!context.WorkEntries.Any())
+            {
+                await WorkEntrySeeding.SeedWorkEntriesAsync(context);
+            }
+
+            if (!context.Salaries.Any())
+            {
+                await SalarySeeding.SeedSalariesAsync(context);
+            }
         }
 
     }

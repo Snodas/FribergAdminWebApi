@@ -10,6 +10,7 @@ namespace FribergAdminWebApi.Data
         public DbSet<Employee> Employees { get; set; }
         public DbSet<Admin> Admins { get; set; }
         public DbSet<WorkEntry> WorkEntries { get; set; }
+        public DbSet<Salary> Salaries { get; set; }
 
         public ApiDbContext(DbContextOptions<ApiDbContext> options) : base(options) { }
 
@@ -28,24 +29,38 @@ namespace FribergAdminWebApi.Data
             // Configure the primary key for the Employee table
             modelBuilder.Entity<Employee>()
                 .HasKey(e => e.Id);
+
             // Configure the primary key for the Admin table
             modelBuilder.Entity<Admin>()
                 .HasKey(a => a.Id);
+
             // Configure the primary key for the WorkEntry table
             modelBuilder.Entity<WorkEntry>()
                 .HasKey(w => w.Id);
-            // Configure relationships if necessary
+
+            // Configure the primary key for the Salary table
+            modelBuilder.Entity<Salary>()
+                .HasKey(s => s.Id);
+
+            // Configure relationships
             modelBuilder.Entity<Employee>()
                 .HasMany(e => e.WorkEntries)
                 .WithOne(w => w.Employee)
-                .HasForeignKey(w => w.EmployeeId);
-            
+                .HasForeignKey(w => w.EmployeeId)
+                .OnDelete(DeleteBehavior.Cascade);
+
             modelBuilder.Entity<Employee>()
-                .HasOne(r => r.ApiUser)
+                .HasMany(e => e.Salaries)
+                .WithOne(s => s.Employee)
+                .HasForeignKey(s => s.EmployeeId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Employee>()
+                .HasOne(e => e.ApiUser)
                 .WithOne(a => a.Employee)
-                .HasForeignKey<Employee>(r => r.ApiUserId)
+                .HasForeignKey<Employee>(e => e.ApiUserId)
                 .OnDelete(DeleteBehavior.Restrict);
-            //Admin till apiuser
+
             modelBuilder.Entity<Admin>()
                 .HasOne(a => a.ApiUser)
                 .WithOne(a => a.Admin)
