@@ -52,12 +52,12 @@ namespace FribergAdminWebApi.Controllers
                 PhoneNumber = regDto.PhoneNumber,
                 FirstName = regDto.FirstName,
                 LastName = regDto.LastName,
-                HourlyRate = regDto.HourlyRate,
+                HourlyRate = 0,
                 SocialSecurityNumber = regDto.SocialSecurityNumber,
                 Address = regDto.Address,
                 EmergencyContactName = regDto.EmergencyContactName,
                 EmergencyContactPhone = regDto.EmergencyContactPhone,
-                ApiUserId = userId // Set the foreign key
+                ApiUserId = userId
             };
             return employee;
         }
@@ -116,7 +116,7 @@ namespace FribergAdminWebApi.Controllers
                     UserId = user.Id
                 };
 
-                return Accepted(response);
+                return Ok(response);
             }
             catch (Exception ex)
             {
@@ -156,30 +156,5 @@ namespace FribergAdminWebApi.Controllers
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
-
-        //private async Task<string> GenerateToken(ApiUser user)
-        //{
-        //    var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtSettings:Key"]));
-        //    var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-        //    var roles = await _userManager.GetRolesAsync(user);
-        //    var roleClaims = roles.Select(q => new Claim(ClaimTypes.Role, q)).ToList();
-        //    var claims = new List<Claim>
-        //    {
-        //        new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
-        //        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-        //        new Claim(JwtRegisteredClaimNames.Email, user.Email),
-        //        new Claim(CustomClaimTypes.Uid, user.Id)
-        //    }
-        //    .Union(roleClaims);
-
-        //    var token = new JwtSecurityToken(issuer: _configuration["JwtSettings:Issuer"],
-        //        audience: _configuration["JwtSettings:Audience"],
-        //        claims: claims,
-        //        expires: DateTime.UtcNow.AddMinutes(Convert.ToInt32(_configuration["JwtSettings:DurationInMinutes"])),
-        //        signingCredentials: credentials
-        //        );
-
-        //    return new JwtSecurityTokenHandler().WriteToken(token);
-        //}
     }
 }
