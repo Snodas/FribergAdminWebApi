@@ -1,4 +1,3 @@
-
 using FribergAdminWebApi.Data;
 using FribergAdminWebApi.Data.Interfaces;
 using FribergAdminWebApi.Data.Repositories;
@@ -26,7 +25,7 @@ namespace FribergAdminWebApi
             builder.Services.AddControllers();
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddOpenApi();
-            builder.Services.AddDbContext<ApiDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("Default")));           
+            builder.Services.AddDbContext<ApiDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
 
             //Injecting
 
@@ -72,7 +71,11 @@ namespace FribergAdminWebApi
                     ClockSkew = TimeSpan.Zero,
                     ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
                     ValidAudience = builder.Configuration["JwtSettings:Audience"],
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Key"]))                    
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Key"])),
+
+                    // *** CRITICAL FIX: Map JWT claim types to ASP.NET Core claim types ***
+                    RoleClaimType = "http://schemas.microsoft.com/ws/2008/06/identity/claims/role",
+                    NameClaimType = "sub" // Maps to the 'sub' claim in your JWT for the user's name/identifier
                 };
             });
 

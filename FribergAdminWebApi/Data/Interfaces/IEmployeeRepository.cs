@@ -7,5 +7,6 @@ namespace FribergAdminWebApi.Data.Interfaces
         Task<IEnumerable<Employee>> GetAllEmployeesAsync();
         Task<IEnumerable<Employee>> GetEmployeesWithRecentWorkEntriesAsync();
         Task<Employee?> GetByUserIdAsync(string userId);
+        Task<Employee?> GetEmployeeByUserIdAsync(string userId);
     }
 }

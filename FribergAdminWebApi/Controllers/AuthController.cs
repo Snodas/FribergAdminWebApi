@@ -141,7 +141,8 @@ namespace FribergAdminWebApi.Controllers
                 new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                new Claim(CustomClaimTypes.Uid, user.Id)
+                new Claim(CustomClaimTypes.Uid, user.Id),
+                new Claim("given_name", user.FirstName) 
             }
             .Union(roleClaims)
             .Union(userClaims);

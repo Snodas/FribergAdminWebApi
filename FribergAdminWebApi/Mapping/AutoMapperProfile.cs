@@ -31,6 +31,8 @@ namespace FribergAdminWebApi.Mapping
             CreateMap<Salary, SalaryDto>()
                 .ForMember(dest => dest.EmployeeName, opt => opt.MapFrom(src =>
                 $"{src.Employee.FirstName} {src.Employee.LastName}"));
+
+            //WorkEntry
         }
 
     }
