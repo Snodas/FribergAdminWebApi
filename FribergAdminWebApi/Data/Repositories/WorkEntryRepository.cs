@@ -38,5 +38,14 @@ namespace FribergAdminWebApi.Data.Repositories
                 .OrderByDescending(we => we.Date)
                 .ToListAsync();
         }
+
+        public async Task<IEnumerable<WorkEntry>> GetWorkEntriesForEmployeeAsync(int employeeId)
+        {
+            return await _context.WorkEntries
+                .Where(we => we.EmployeeId == employeeId)
+                .Include(we => we.Employee)
+                .OrderByDescending(we => we.Date)
+                .ToListAsync();
+        }
     }
 }

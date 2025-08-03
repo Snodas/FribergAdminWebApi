@@ -57,94 +57,116 @@ namespace FribergAdminWebApi.Controllers
         }
 
         [HttpGet("my-profile")]
-        //[Authorize(Roles = ApiRoles.Employee)]
+        [Authorize(Roles = ApiRoles.Employee)]
         public async Task<ActionResult<EmployeeUserDto>> GetMyProfile()
         {
-            var userIdClaim = User.FindFirst(CustomClaimTypes.Uid);
-            if (userIdClaim == null || string.IsNullOrEmpty(userIdClaim.Value))
-                return Unauthorized("User ID not found in token");
+            try
+            {
+                var userIdClaim = User.FindFirst(CustomClaimTypes.Uid);
+                if (userIdClaim == null || string.IsNullOrEmpty(userIdClaim.Value))
+                    return Unauthorized("User ID not found in token");
 
-            var employee = await _employeeRepository.GetByUserIdAsync(userIdClaim.Value);
-            if (employee == null)
-                return NotFound("Employee not found");
+                var employee = await _employeeRepository.GetByUserIdAsync(userIdClaim.Value);
+                if (employee == null)
+                    return NotFound("Employee profile not found");
 
-            var profileDto = _mapper.Map<EmployeeUserDto>(employee);
-            return Ok(profileDto);
+                var profileDto = _mapper.Map<EmployeeUserDto>(employee);
+                return Ok(profileDto);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "An error occurred while retrieving your profile");
+            }
         }
 
-        //[HttpPut("update-my-profile")]
-        //[Authorize(Roles = ApiRoles.Employee)]
-        //public async Task<ActionResult<EmployeeUserDto>> UpdateMyProfile(EmployeeUserDto dto)
-        //{
-        //    try
-        //    {
-        //        var userIdClaim = User.FindFirst(CustomClaimTypes.Uid);
-        //        if (userIdClaim == null || string.IsNullOrEmpty(userIdClaim.Value)) 
-        //            return Unauthorized("User ID not found in token");
+        [HttpPut("update-my-profile")]
+        [Authorize(Roles = ApiRoles.Employee)]
+        public async Task<ActionResult<EmployeeUserDto>> UpdateMyProfile(EmployeeUpdateDto dto)
+        {
+            try
+            {
+                var userIdClaim = User.FindFirst(CustomClaimTypes.Uid);
+                if (userIdClaim == null || string.IsNullOrEmpty(userIdClaim.Value))
+                    return Unauthorized("User ID not found in token");
 
-        //        var employee = await _employeeRepository.GetByUserIdAsync(userIdClaim.Value);
-        //        if (employee == null)
-        //            return NotFound("Employee profile not found");
+                var employee = await _employeeRepository.GetByUserIdAsync(userIdClaim.Value);
+                if (employee == null)
+                    return NotFound("Employee profile not found");
 
-        //        if (employee.Email != dto.Email &&
-        //            await _employeeRepository.AnyAsync(e => e.Email == dto.Email))
-        //        {
-        //            return BadRequest("An employee with this email already exists.");
-        //        }
+                // Check if email is being changed and if it already exists
+                if (employee.Email != dto.Email &&
+                    await _employeeRepository.AnyAsync(e => e.Email == dto.Email))
+                {
+                    return BadRequest("An employee with this email already exists");
+                }
 
-        //        _mapper.Map(dto, employee);
+                // Map the update DTO to the employee (excludes HourlyRate)
+                _mapper.Map(dto, employee);
 
-        //        if (employee.ApiUser != null && employee.ApiUser.Email != dto.Email)
-        //        {
-        //            employee.ApiUser.Email = dto.Email;
-        //            employee.ApiUser.UserName = dto.Email;
-        //            employee.ApiUser.NormalizedEmail = dto.Email.ToUpper();
-        //            employee.ApiUser.NormalizedUserName = dto.Email.ToUpper();
-        //            await _userManager.UpdateAsync(employee.ApiUser);
-        //        }
+                // Update ApiUser email if it exists and has changed
+                if (employee.ApiUser != null && employee.ApiUser.Email != dto.Email)
+                {
+                    employee.ApiUser.Email = dto.Email;
+                    employee.ApiUser.UserName = dto.Email;
+                    employee.ApiUser.NormalizedEmail = dto.Email.ToUpper();
+                    employee.ApiUser.NormalizedUserName = dto.Email.ToUpper();
+                    await _userManager.UpdateAsync(employee.ApiUser);
+                }
 
-        //        var updatedEmployee = await _employeeRepository.UpdateAsync(employee);
-        //        var result = _mapper.Map<EmployeeProfileDto>(updatedEmployee);
+                await _employeeRepository.UpdateAsync(employee);
+                var result = _mapper.Map<EmployeeUserDto>(employee);
 
-        //        return Ok(result);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return StatusCode(500, "An error occurred while updating the employee profile");
-        //    }
-        //}
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "An error occurred while updating your profile");
+            }
+        }
 
 
-        //[HttpPut("{employeeId}/edit")]
-        ////[Authorize(Roles = $"{ApiRoles.Admin}, {ApiRoles.Employee}")]
-        //public async Task<ActionResult<Employee>> UpdateEmployee(int employeeId, EmployeeUserDto dto)
-        //{
-        //    try
-        //    {
-        //        var existingEmployee = await _employeeRepository.GetByIdAsync(employeeId);
-        //        if (existingEmployee == null)
-        //        {
-        //            return NotFound("Employee not found");
-        //        }
+        [HttpPut("admin/update-employee/{employeeId}")]
+        [Authorize(Roles = ApiRoles.Admin)]
+        public async Task<ActionResult<EmployeeUserDto>> UpdateEmployeeByAdmin(int employeeId, EmployeeAdminUpdateDto dto)
+        {
+            try
+            {
+                var existingEmployee = await _employeeRepository.GetByIdAsync(employeeId);
+                if (existingEmployee == null)
+                {
+                    return NotFound("Employee not found");
+                }
 
-        //        if (existingEmployee.Email != dto.Email &&
-        //            await _employeeRepository.AnyAsync(e => e.Email == dto.Email))
-        //        {
-        //            return BadRequest("An employee with this email already exists.");
-        //        }
+                // Check if email is being changed and if it already exists
+                if (existingEmployee.Email != dto.Email &&
+                    await _employeeRepository.AnyAsync(e => e.Email == dto.Email && e.Id != employeeId))
+                {
+                    return BadRequest("An employee with this email already exists");
+                }
 
-        //        _mapper.Map(dto, existingEmployee);
-        //        existingEmployee.Id = employeeId;
+                // Map the admin update DTO to the employee (includes HourlyRate)
+                _mapper.Map(dto, existingEmployee);
 
-        //        var updatedEmployee = await _employeeRepository.UpdateAsync(existingEmployee);
+                // Update ApiUser email if it exists and has changed
+                if (existingEmployee.ApiUser != null && existingEmployee.ApiUser.Email != dto.Email)
+                {
+                    existingEmployee.ApiUser.Email = dto.Email;
+                    existingEmployee.ApiUser.UserName = dto.Email;
+                    existingEmployee.ApiUser.NormalizedEmail = dto.Email.ToUpper();
+                    existingEmployee.ApiUser.NormalizedUserName = dto.Email.ToUpper();
+                    await _userManager.UpdateAsync(existingEmployee.ApiUser);
+                }
 
-        //        return Ok(updatedEmployee);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return StatusCode(500, "An error occurred while updating the employee");
-        //    }
-        //}
+                await _employeeRepository.UpdateAsync(existingEmployee);
+                var result = _mapper.Map<EmployeeUserDto>(existingEmployee);
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "An error occurred while updating the employee");
+            }
+        }
 
 
         [HttpGet("{id}")]
@@ -161,22 +183,25 @@ namespace FribergAdminWebApi.Controllers
         }
 
 
-        [HttpGet("admin/allemployees")]
-        //[Authorize(Roles = ApiRoles.Admin)]
+        [HttpGet("admin/all-employees")]
+        [Authorize(Roles = ApiRoles.Admin)]
         public async Task<ActionResult<IEnumerable<EmployeeUserDto>>> GetAllEmployees()
         {
-            var employees = await _employeeRepository.GetAllEmployeesAsync();
-            if (employees == null)
+            try
             {
-                return NotFound("No employees found.");
+                var employees = await _employeeRepository.GetAllEmployeesAsync();
+                if (employees == null || !employees.Any())
+                {
+                    return Ok(new List<EmployeeUserDto>()); 
+                }
+
+                var response = _mapper.Map<IEnumerable<EmployeeUserDto>>(employees);
+                return Ok(response);
             }
-
-            var response = _mapper.Map<IEnumerable<EmployeeUserDto>>(employees);
-
-            return Ok(response);
+            catch (Exception ex)
+            {
+                return StatusCode(500, "An error occurred while retrieving employees");
+            }
         }
-
-        //[HttpGet()]
-        //public async Task
     }
 }

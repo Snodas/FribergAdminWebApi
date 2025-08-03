@@ -16,6 +16,23 @@ namespace FribergAdminWebApi.Mapping
 
             CreateMap<Employee, EmployeeUserDto>();
 
+            CreateMap<EmployeeUpdateDto, Employee>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.HourlyRate, opt => opt.Ignore())
+                .ForMember(dest => dest.SocialSecurityNumber, opt => opt.Ignore())
+                .ForMember(dest => dest.ApiUserId, opt => opt.Ignore())
+                .ForMember(dest => dest.ApiUser, opt => opt.Ignore())
+                .ForMember(dest => dest.WorkEntries, opt => opt.Ignore())
+                .ForMember(dest => dest.Salaries, opt => opt.Ignore());
+
+            CreateMap<EmployeeAdminUpdateDto, Employee>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.SocialSecurityNumber, opt => opt.Ignore()) 
+                .ForMember(dest => dest.ApiUserId, opt => opt.Ignore())
+                .ForMember(dest => dest.ApiUser, opt => opt.Ignore())
+                .ForMember(dest => dest.WorkEntries, opt => opt.Ignore())
+                .ForMember(dest => dest.Salaries, opt => opt.Ignore());
+
             CreateMap<EmployeeProfileDto, Employee>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.HourlyRate, opt => opt.Ignore())
@@ -33,6 +50,12 @@ namespace FribergAdminWebApi.Mapping
                 $"{src.Employee.FirstName} {src.Employee.LastName}"));
 
             //WorkEntry
+
+            CreateMap<WorkEntryUpdateDto, WorkEntry>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.EmployeeId, opt => opt.Ignore()) 
+                .ForMember(dest => dest.Employee, opt => opt.Ignore())
+                .ForMember(dest => dest.HourlyRateAtTimeOfWork, opt => opt.Ignore());
         }
 
     }

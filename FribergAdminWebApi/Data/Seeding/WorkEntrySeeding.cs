@@ -15,7 +15,7 @@ namespace FribergAdminWebApi.Data.Seeding
 
             foreach (var employee in employees)
             {
-                for (int i = 1; i <= 60; i++)
+                for (int i = 1; i <= 150; i++)
                 {
                     var workDate = DateTime.Now.AddDays(-i);
 
@@ -29,9 +29,9 @@ namespace FribergAdminWebApi.Data.Seeding
                     {
                         EmployeeId = employee.Id,
                         Date = workDate.Date,
-                        WorkDuration = TimeSpan.FromHours(random.Next(6, 9)) 
+                        WorkDuration = TimeSpan.FromHours(random.Next(6, 9))
                                      + TimeSpan.FromMinutes(random.Next(0, 60)),
-                        HourlyRateAtTimeOfWork = employee.HourlyRate 
+                        HourlyRateAtTimeOfWork = employee.HourlyRate
                     };
 
                     workEntries.Add(workEntry);

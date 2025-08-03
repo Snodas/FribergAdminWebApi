@@ -207,5 +207,68 @@ namespace FribergAdminWebApi.Controllers
                 return Problem($"Something went wrong in {nameof(DeleteWorkEntry)}: {ex.Message}", statusCode: 500);
             }
         }
+
+        // GET: api/WorkEntry/employee/{employeeId}
+        [HttpGet("employee/{employeeId}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<List<WorkEntryDto>>> GetWorkEntriesForEmployee(int employeeId)
+        {
+            try
+            {
+                var workEntries = await _workEntryRepository.GetWorkEntriesByEmployeeIdAsync(employeeId);
+
+                var workEntryDtos = workEntries.Select(we => new WorkEntryDto
+                {
+                    Id = we.Id,
+                    Date = we.Date,
+                    WorkDuration = we.WorkDuration,
+                    EmployeeId = we.EmployeeId,
+                    HourlyRateAtTimeOfWork = we.HourlyRateAtTimeOfWork,
+                    EmployeeName = $"{we.Employee?.FirstName} {we.Employee?.LastName}"
+                }).ToList();
+
+                return Ok(workEntryDtos);
+            }
+            catch (Exception ex)
+            {
+                return Problem($"Something went wrong in {nameof(GetWorkEntriesForEmployee)}: {ex.Message}", statusCode: 500);
+            }
+        }
+
+        // PUT: api/WorkEntry/{id}
+        [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<WorkEntryDto>> UpdateWorkEntry(int id, WorkEntryUpdateDto updateDto)
+        {
+            try
+            {
+                var existingWorkEntry = await _workEntryRepository.GetByIdAsync(id);
+                if (existingWorkEntry == null)
+                {
+                    return NotFound("Work entry not found");
+                }
+
+                existingWorkEntry.Date = updateDto.Date;
+                existingWorkEntry.WorkDuration = updateDto.WorkDuration;
+
+                await _workEntryRepository.UpdateAsync(existingWorkEntry);
+
+                var resultDto = new WorkEntryDto
+                {
+                    Id = existingWorkEntry.Id,
+                    Date = existingWorkEntry.Date,
+                    WorkDuration = existingWorkEntry.WorkDuration,
+                    EmployeeId = existingWorkEntry.EmployeeId,
+                    HourlyRateAtTimeOfWork = existingWorkEntry.HourlyRateAtTimeOfWork,
+                    EmployeeName = $"{existingWorkEntry.Employee?.FirstName} {existingWorkEntry.Employee?.LastName}"
+                };
+
+                return Ok(resultDto);
+            }
+            catch (Exception ex)
+            {
+                return Problem($"Something went wrong in {nameof(UpdateWorkEntry)}: {ex.Message}", statusCode: 500);
+            }
+        }
     }
 }
